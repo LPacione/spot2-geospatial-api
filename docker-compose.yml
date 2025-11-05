@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  #PostgreSQL con PostGIS
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: spot2_db
+    restart: always
+    environment:
+      POSTGRES_DB: spot2_challenge_db
+      POSTGRES_USER: spot2_user
+      POSTGRES_PASSWORD: spot2_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    command: >
+      bash -c "docker-entrypoint.sh postgres &
+      sleep 5 &&
+      psql -U spot2_user -d spot2_challenge_db -c 'CREATE EXTENSION IF NOT EXISTS postgis;' &&
+      wait"
+
+  app:
+    build: . 
+    container_name: spot2_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app 
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: spot2.settings
+      DB_NAME: spot2_challenge_db
+      DB_USER: spot2_user
+      DB_PASSWORD: spot2_password
+      DB_HOST: db
+      DB_PORT: 5432
+
+volumes:
+  postgres_data:
