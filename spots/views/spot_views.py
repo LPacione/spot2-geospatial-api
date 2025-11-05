@@ -4,10 +4,36 @@ from ..serializers.spot_serializers import SpotSerializer, AveragePriceSerialize
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Avg
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Spot.objects.all() 
     serializer_class = SpotSerializer
+
+
+    @action(detail=False, methods=['get'], url_path='nearby')
+    def nearby(self, request):
+        """
+        Returns spots near a given lat/lng within a radius in meters.
+        Query params: lat, lng, radius
+        """
+        try:
+            lat = float(request.query_params.get('lat'))
+            lng = float(request.query_params.get('lng'))
+            radius = float(request.query_params.get('radius', 1000))  # default 1000 m
+        except (TypeError, ValueError):
+            return Response({"detail": "Parameters 'lat', 'lng', 'radius' must be numbers."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        point = Point(lng, lat, srid=4326)  # lon, lat
+        nearby_spots = Spot.objects.annotate(distance=Distance('location', point)) \
+                                .filter(distance__lte=radius) \
+                                .order_by('distance')
+        
+        serializer = self.get_serializer(nearby_spots, many=True)
+        return Response(serializer.data)
+
 
     # Endpoint 3
     def get_queryset(self):
