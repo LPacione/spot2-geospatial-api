@@ -10,6 +10,8 @@ from django.contrib.gis.db.models.functions import Distance
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Spot.objects.all() 
     serializer_class = SpotSerializer
+    
+    lookup_field = 'spot_id'
 
 
     @action(detail=False, methods=['get'], url_path='nearby')
