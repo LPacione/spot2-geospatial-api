@@ -20,7 +20,7 @@ INSTALLED_APPS = [
 
     'django.contrib.gis',
     'rest_framework',
-    
+    'drf_spectacular',
     'spots', 
     "django_filters"
 ]
@@ -94,3 +94,13 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Spot2 Geospatial API',
+    'DESCRIPTION': 'API used for geospatial searching, filtering, and analisis.',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
