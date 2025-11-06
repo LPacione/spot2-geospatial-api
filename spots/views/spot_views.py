@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from ..models import Spot
 from ..serializers.spot_serializers import SpotSerializer, AveragePriceSerializer
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 from django.db.models import Avg
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.geos import GEOSGeometry
 
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Spot.objects.all() 
@@ -58,6 +60,25 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(municipality__iexact=municipality)
 
         return queryset
+    
+    # Endpoint 4
+    @action(detail=False, methods=['post'], url_path='within')
+    def within(self, request):
+        """
+        Returns spots inside a polygon.
+        Body: { "polygon": { "type": "Polygon", "coordinates": [...] } }
+        """
+        try:
+            polygon_geojson = request.data.get('polygon')
+            polygon = GEOSGeometry(str(polygon_geojson))
+        except Exception:
+            return Response({"detail": "Invalid polygon geometry."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        spots_within = Spot.objects.filter(location__within=polygon)
+        serializer = self.get_serializer(spots_within, many=True)
+        return Response(serializer.data)
+
 
     # Endpoint 5
     @action(detail=False, methods=['get'], url_path='average-price-by-sector')
@@ -76,16 +97,13 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = AveragePriceSerializer(average_prices, many=True)
         return Response(serializer.data)
 
-    # Endpoint 6
-    def retrieve(self, request, pk=None):
+    # # Endpoint 6
+    def retrieve(self, request, spot_id=None):  # with lookup_field
         """
-        Returns detail of a single spot by its ID
+        Retrieve information related to the spot_id.
+        Not necessary, but I choose define it.
         """
-        try:
-            spot = Spot.objects.get(pk=pk)
-        except Spot.DoesNotExist:
-            return Response({"detail": "Spot not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+        spot = get_object_or_404(Spot, spot_id=spot_id)
         serializer = self.get_serializer(spot)
         return Response(serializer.data)
 
