@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Spot
+from ..models.spot import Spot
 
 
 class SpotSerializer(serializers.ModelSerializer):

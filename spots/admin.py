@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Spot
+from .models.spot import Spot
 
 @admin.register(Spot)
 class SpotAdmin(admin.ModelAdmin):

@@ -1,7 +1,7 @@
 import csv
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
-from spots.models import Spot
+from spots.models.spot import Spot
 from datetime import datetime
 from pathlib import Path
 
