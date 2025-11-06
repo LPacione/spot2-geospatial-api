@@ -13,7 +13,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     
     lookup_field = 'spot_id'
 
-
+    # Endpoint 2
     @action(detail=False, methods=['get'], url_path='nearby')
     def nearby(self, request):
         """
@@ -59,6 +59,36 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
+    # Endpoint 5
+    @action(detail=False, methods=['get'], url_path='average-price-by-sector')
+    def average_price_by_sector(self, request):
+        """
+        Calculates the average rental price by sector.
+        """
+        average_prices = (
+            Spot.objects
+            .exclude(price_total_rent__isnull=True)
+            .values('sector_id')
+            .annotate(avg_price=Avg('price_total_rent'))
+            .order_by('sector_id')
+        )
+        
+        serializer = AveragePriceSerializer(average_prices, many=True)
+        return Response(serializer.data)
+
+    # Endpoint 6
+    def retrieve(self, request, pk=None):
+        """
+        Returns detail of a single spot by its ID
+        """
+        try:
+            spot = Spot.objects.get(pk=pk)
+        except Spot.DoesNotExist:
+            return Response({"detail": "Spot not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(spot)
+        return Response(serializer.data)
+
     # Endpoint 7
     @action(detail=False, methods=['get'], url_path='top-rent')
     def top_rent(self, request):
@@ -66,7 +96,6 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         Returns the spots with the highest total rental price, limited by the 'limit' parameter'.
         """
         try:
-            # Obtener el límite (default 10)
             limit = int(request.query_params.get('limit', 10))
             if limit <= 0:
                 raise ValueError
@@ -84,22 +113,4 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         )
         
         serializer = self.get_serializer(top_spots, many=True)
-        return Response(serializer.data)
-
-
-    # Endpoint 5
-    @action(detail=False, methods=['get'], url_path='average-price-by-sector')
-    def average_price_by_sector(self, request):
-        """
-        Calculates the average rental price by sector.
-        """
-        average_prices = (
-            Spot.objects
-            .exclude(price_total_rent__isnull=True)
-            .values('sector_id')
-            .annotate(avg_price=Avg('price_total_rent'))
-            .order_by('sector_id')
-        )
-        
-        serializer = AveragePriceSerializer(average_prices, many=True)
         return Response(serializer.data)
