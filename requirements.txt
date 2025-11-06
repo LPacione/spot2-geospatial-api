@@ -5,3 +5,4 @@ django-environ
 djangorestframework-gis
 django-cors-headers
 django-filter
+drf-spectacular
