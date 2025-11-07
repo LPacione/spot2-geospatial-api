@@ -6,6 +6,6 @@ class PropViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Read-only endpoints
     """
-    queryset = Prop.objects.all()
+    queryset = Prop.objects.all().order_by('public_id')
     serializer_class = PropSerializer
     lookup_field = "public_id"

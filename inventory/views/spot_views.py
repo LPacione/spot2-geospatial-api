@@ -33,13 +33,13 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='nearby')
     def nearby(self, request):
         """
-        Returns spots near a given lat/lng within a radius in meters.
-        Query params: lat, lng, radius
+        Returns spots near a lat and lng with a radius (meters).
+        Parameters: lat, lng, radius
         """
         try:
             lat = float(request.query_params.get('lat'))
             lng = float(request.query_params.get('lng'))
-            radius = float(request.query_params.get('radius', 1000))  # default 1000 m
+            radius = float(request.query_params.get('radius', 1000))
         except (TypeError, ValueError):
             return Response({"detail": "Parameters 'lat', 'lng', 'radius' must be numbers."},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -56,7 +56,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     # Endpoint 3
     def get_queryset(self):
         """
-        Override get_queryset to allow filtering by sector, type, and municipality using query parameters
+        Override get_queryset to allow filtering by sector, type, and municipality using parameters
         """
         return super().get_queryset()
     
@@ -65,7 +65,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['post'], url_path='within')
     def within(self, request):
         """
-        Returns spots inside a polygon.
+        Returns the spots inside a polygon.
         Body: { "polygon": { "type": "Polygon", "coordinates": [...] } }
         """
         try:
@@ -85,7 +85,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='average-price-by-sector')
     def average_price_by_sector(self, request):
         """
-        Calculates the average rental price by sector.
+        Returns the average rental price by sector.
         """
         average_prices = (
             Spot.objects
@@ -99,7 +99,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     # # Endpoint 6
-    def retrieve(self, request, spot_id=None):  # with lookup_field
+    def retrieve(self, request, spot_id=None):
         """
         Retrieve information related to the spot_id.
         Not necessary, but I choose define it.
@@ -112,7 +112,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='top-rent')
     def top_rent(self, request):
         """
-        Returns the spots with the highest total rental price, limited by the 'limit' parameter'.
+        Returns the spots with the highest total rental price, can be limited using the 'limit' parameter'.
         """
         try:
             limit = int(request.query_params.get('limit', 5))
