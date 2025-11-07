@@ -10,6 +10,7 @@ from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+import json
 
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Spot.objects.all() 
@@ -69,7 +70,8 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         """
         try:
             polygon_geojson = request.data.get('polygon')
-            polygon = GEOSGeometry(str(polygon_geojson))
+            geojson_string = json.dumps(polygon_geojson)
+            polygon = GEOSGeometry(geojson_string)
         except Exception:
             return Response({"detail": "Invalid polygon geometry."},
                             status=status.HTTP_400_BAD_REQUEST)
