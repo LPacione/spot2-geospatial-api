@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'drf_spectacular',
-    'spots', 
+    'inventory', 
     "django_filters"
 ]
 
