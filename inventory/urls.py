@@ -1,15 +1,17 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views.spot_views import SpotViewSet
+from .views.prop_views import PropViewSet
 from django.http import HttpResponse
 
 router = DefaultRouter()
-router.register(r'', SpotViewSet, basename='spot') 
+router.register(r'spots', SpotViewSet, basename='spot')
+router.register(r'props', PropViewSet, basename='prop')
 
 def home(request):
-    return HttpResponse("Bienvenido a Spot2 API. Usa /api/spots/ para ver los endpoints.")
+    return HttpResponse("Welcome to Spot2 API.")
 
 urlpatterns = [
-    path('spots/', include(router.urls)), 
     path('', home),
+    path('', include(router.urls)),
 ]

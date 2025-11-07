@@ -1,9 +1,10 @@
 import csv
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
-from spots.models import Spot
+from inventory.models.spot import Spot
 from datetime import datetime
 from pathlib import Path
+from django.utils.timezone import make_aware
 
 
 class Command(BaseCommand):
@@ -26,11 +27,12 @@ class Command(BaseCommand):
 
             for row in reader:
                 try:
-                    title = row.get('spot_settlement') or 'Sin nombre'
+                    title = row.get('spot_settlement') or 'No name'
                     lat = float(row.get('spot_latitude', 0))
                     lon = float(row.get('spot_longitude', 0))
                     location = Point(lon, lat) if lat and lon else None
-
+                    aware_date = make_aware(datetime.strptime(row.get('spot_created_date'), '%Y-%m-%d'))
+    
                     Spot.objects.create(
                         spot_id=row.get('spot_id'),
                         title=title,
@@ -48,7 +50,7 @@ class Command(BaseCommand):
                         price_total_sale=row.get('spot_price_total_mxn_sale') or None,
                         modality=row.get('spot_modality'),
                         user_id=row.get('uuiid') or None,
-                        created_date=datetime.strptime(row.get('spot_created_date'), '%Y-%m-%d'),
+                        created_date=aware_date,
                         location=location,
                     )
                     created += 1

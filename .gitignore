@@ -1,34 +1,28 @@
-
 __pycache__/
-*.py[cod]
-*.pyo
+*.py[co]
 *.pyd
-*.pyc
 
 
 spot2/Lib/
 spot2/Scripts/
+
+
 env/
 venv/
 .venv/
 
 
-*.log
-*.pot
-*.pyc
 *.sqlite3
 db.sqlite3
 media/
 staticfiles/
 static/
+*.log
+*.pot
 
 
-*/migrations/*.py
-*/migrations/*.pyc
-!*/migrations/__init__.py
-
-*.json
+.env
 
 .vscode/
-
 Thumbs.db
+.idea/

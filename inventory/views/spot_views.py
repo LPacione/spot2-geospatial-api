@@ -8,11 +8,25 @@ from django.db.models import Avg
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+import json
 
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Spot.objects.all() 
     serializer_class = SpotSerializer
     
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['sector_id', 'type_id', 'municipality', 'state']
+    ordering_fields = [
+        'price_total_rent',
+        'price_total_sale',
+        'area_sqm',
+        'created_date',
+        'municipality',
+        'state'
+    ]
+    ordering = ['-created_date']
     lookup_field = 'spot_id'
 
     # Endpoint 2
@@ -44,22 +58,8 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Override get_queryset to allow filtering by sector, type, and municipality using query parameters
         """
-        queryset = super().get_queryset()
-        query_params = self.request.query_params
-
-        sector = query_params.get('sector')
-        if sector:
-            queryset = queryset.filter(sector_id=sector)
-
-        spot_type = query_params.get('type')
-        if spot_type:
-            queryset = queryset.filter(type_id=spot_type)
-        
-        municipality = query_params.get('municipality')
-        if municipality:
-            queryset = queryset.filter(municipality__iexact=municipality)
-
-        return queryset
+        return super().get_queryset()
+    
     
     # Endpoint 4
     @action(detail=False, methods=['post'], url_path='within')
@@ -70,7 +70,8 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         """
         try:
             polygon_geojson = request.data.get('polygon')
-            polygon = GEOSGeometry(str(polygon_geojson))
+            geojson_string = json.dumps(polygon_geojson)
+            polygon = GEOSGeometry(geojson_string)
         except Exception:
             return Response({"detail": "Invalid polygon geometry."},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -114,7 +115,7 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         Returns the spots with the highest total rental price, limited by the 'limit' parameter'.
         """
         try:
-            limit = int(request.query_params.get('limit', 10))
+            limit = int(request.query_params.get('limit', 5))
             if limit <= 0:
                 raise ValueError
         except ValueError:
