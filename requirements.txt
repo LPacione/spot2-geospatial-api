@@ -7,3 +7,4 @@ django-cors-headers
 django-filter
 drf-spectacular
 django-filter
+python-dotenv
